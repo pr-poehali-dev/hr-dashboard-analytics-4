@@ -122,6 +122,144 @@ const metrics = [
   },
 ];
 
+const hiringData = [
+  { month: "Октябрь", applied: 47, interviewed: 18, offered: 8, hired: 6 },
+  { month: "Ноябрь",  applied: 52, interviewed: 21, offered: 9, hired: 8 },
+  { month: "Декабрь", applied: 31, interviewed: 12, offered: 5, hired: 4 },
+  { month: "Январь",  applied: 28, interviewed: 10, offered: 4, hired: 3 },
+  { month: "Февраль", applied: 61, interviewed: 24, offered: 11, hired: 9 },
+  { month: "Март",    applied: 74, interviewed: 29, offered: 14, hired: 12 },
+].map((r) => ({
+  ...r,
+  conversion: parseFloat(((r.hired / r.applied) * 100).toFixed(1)),
+}));
+
+const bestConversion = Math.max(...hiringData.map((r) => r.conversion));
+const worstConversion = Math.min(...hiringData.map((r) => r.conversion));
+
+const HiringFunnelTable = () => (
+  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="flex items-center gap-3 mb-6">
+      <h2 className="text-base font-bold text-slate-800">Динамика найма</h2>
+      <span className="text-xs text-slate-400">· последние 6 месяцев</span>
+    </div>
+
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-slate-100">
+            {["Месяц", "Подано", "Интервью", "Оффер", "Вышли", "Конверсия"].map((h) => (
+              <th
+                key={h}
+                className="text-left text-xs font-semibold text-slate-400 pb-3 pr-4 whitespace-nowrap"
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {hiringData.map((row) => {
+            const isBest = row.conversion === bestConversion;
+            const isWorst = row.conversion === worstConversion;
+            return (
+              <tr
+                key={row.month}
+                className={`border-b border-slate-50 transition-colors hover:bg-slate-50 ${
+                  isBest ? "bg-emerald-50/60" : isWorst ? "bg-red-50/60" : ""
+                }`}
+              >
+                <td className="py-3 pr-4 font-semibold text-slate-700 whitespace-nowrap">
+                  <div className="flex items-center gap-2">
+                    {isBest && (
+                      <span className="text-xs bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded">
+                        ↑ лучший
+                      </span>
+                    )}
+                    {isWorst && (
+                      <span className="text-xs bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">
+                        ↓ худший
+                      </span>
+                    )}
+                    {row.month}
+                  </div>
+                </td>
+                <td className="py-3 pr-4 text-slate-600">{row.applied}</td>
+                <td className="py-3 pr-4 text-slate-600">
+                  {row.interviewed}
+                  <span className="text-xs text-slate-400 ml-1">
+                    ({Math.round((row.interviewed / row.applied) * 100)}%)
+                  </span>
+                </td>
+                <td className="py-3 pr-4 text-slate-600">
+                  {row.offered}
+                  <span className="text-xs text-slate-400 ml-1">
+                    ({Math.round((row.offered / row.applied) * 100)}%)
+                  </span>
+                </td>
+                <td className="py-3 pr-4 font-semibold text-slate-700">
+                  {row.hired}
+                </td>
+                <td className="py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${
+                          isBest
+                            ? "bg-emerald-500"
+                            : isWorst
+                            ? "bg-red-400"
+                            : "bg-blue-400"
+                        }`}
+                        style={{ width: `${(row.conversion / bestConversion) * 100}%` }}
+                      />
+                    </div>
+                    <span
+                      className={`text-xs font-bold ${
+                        isBest
+                          ? "text-emerald-600"
+                          : isWorst
+                          ? "text-red-500"
+                          : "text-slate-600"
+                      }`}
+                    >
+                      {row.conversion}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr className="bg-slate-50 rounded-b-xl">
+            <td className="py-3 pr-4 text-xs font-bold text-slate-500 pl-1">Итого</td>
+            <td className="py-3 pr-4 text-xs font-bold text-slate-700">
+              {hiringData.reduce((s, r) => s + r.applied, 0)}
+            </td>
+            <td className="py-3 pr-4 text-xs font-bold text-slate-700">
+              {hiringData.reduce((s, r) => s + r.interviewed, 0)}
+            </td>
+            <td className="py-3 pr-4 text-xs font-bold text-slate-700">
+              {hiringData.reduce((s, r) => s + r.offered, 0)}
+            </td>
+            <td className="py-3 pr-4 text-xs font-bold text-slate-700">
+              {hiringData.reduce((s, r) => s + r.hired, 0)}
+            </td>
+            <td className="py-3 text-xs font-bold text-blue-600">
+              {(
+                (hiringData.reduce((s, r) => s + r.hired, 0) /
+                  hiringData.reduce((s, r) => s + r.applied, 0)) *
+                100
+              ).toFixed(1)}%
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+);
+
 type Tab = "headcount" | "turnover" | "vacancies" | "fillTime";
 
 const chartTabs: { key: Tab; label: string; color: string }[] = [
@@ -416,6 +554,9 @@ const Index = () => {
             </p>
           )}
         </div>
+
+        {/* Hiring Funnel Table */}
+        <HiringFunnelTable />
 
         {/* Footer note */}
         <div className="flex items-center gap-2 text-xs text-slate-400 pb-4">
